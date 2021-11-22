@@ -1,6 +1,24 @@
 # rcon-rs
 
-Simple [RCON](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol) protocol realization on RUST programming language
+**Simple implementation of a crate that allows you to work with the RCON protocol**
+
+To work with TCP, the `TcpStream` structure built into the `std::net` module is used
+
+## About RCON
+- [Description of RCON at developer.valvesoftware.com](https://developer.valvesoftware.com/wiki/Source_RCON_Protocol)
+
+## Dependencies
+- [rand](https://crates.io/crates/rand) for generate a random request ID
+- [bytes](https://crates.io/crates/bytes) for converting types to bytes, for subsequent transmission via tcp
+
+## Games that support this protocol
+- Minecraft
+- Counter Strike
+- ARK
+- Rust
+- SAMP
+- MTA
+- etc
 
 ## Example
 
