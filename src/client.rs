@@ -6,6 +6,7 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 
 /// Simple RCON client
+#[derive(Debug)]
 pub struct RCONClient {
     pub url: String,
     pub(self) socket: TcpStream,
