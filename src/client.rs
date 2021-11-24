@@ -4,6 +4,24 @@ use crate::{AuthRequest, AuthResponse};
 use bytes::BufMut;
 use std::io::{Read, Write};
 use std::net::TcpStream;
+use std::time::Duration;
+
+const DEFAULT_READ_TIMEOUT: u64 = 30;
+const DEFAULT_WRITE_TIMEOUT: u64 = 30;
+
+/// Configuration for RCON client
+#[derive(Default)]
+pub struct RCONConfig {
+    /// URL to server listening RCON
+    /// example: `0.0.0.0:25575` or `donkey-engine.host:1337`
+    pub url: String,
+    /// Timeout in secs for commands sending to server
+    /// Default: 30 secs
+    pub write_timeout: Option<u64>,
+    /// Timeout in secs for response waiting from server
+    /// Default: 30 secs
+    pub read_timeout: Option<u64>,
+}
 
 /// Simple RCON client
 #[derive(Debug)]
@@ -15,11 +33,32 @@ pub struct RCONClient {
 /// RCON client
 impl RCONClient {
     /// Create new connection
-    pub fn new(url: String) -> Result<Self, RCONError> {
-        let socket = TcpStream::connect(&url).map_err(|err| {
+    pub fn new(config: RCONConfig) -> Result<Self, RCONError> {
+        let socket = TcpStream::connect(&config.url).map_err(|err| {
             RCONError::TcpConnectionError(format!("TCP connection error: {}", err))
         })?;
-        Ok(Self { url, socket })
+
+        socket
+            .set_write_timeout(Some(Duration::new(
+                config.write_timeout.unwrap_or(DEFAULT_WRITE_TIMEOUT),
+                0,
+            )))
+            .map_err(|err| {
+                RCONError::TcpConnectionError(format!("Cannot set socket write_timeout: {}", err))
+            })?;
+        socket
+            .set_read_timeout(Some(Duration::new(
+                config.read_timeout.unwrap_or(DEFAULT_READ_TIMEOUT),
+                0,
+            )))
+            .map_err(|err| {
+                RCONError::TcpConnectionError(format!("Cannot set socket read_timeout: {}", err))
+            })?;
+
+        Ok(Self {
+            url: config.url,
+            socket,
+        })
     }
 
     /// Auth on game server
@@ -93,6 +132,11 @@ fn execute(
         .map_err(|err| RCONError::TcpConnectionError(format!("TCP response error {}", err)))?;
     let response_body = String::from_utf8(response_body_buffer)
         .map_err(|err| RCONError::TypeError(format!("TypeError {}", err)))?;
+
+    let mut terminating_nulls = [0u8; 2];
+    socket
+        .read_exact(&mut terminating_nulls)
+        .map_err(|err| RCONError::TcpConnectionError(format!("TCP response error {}", err)))?;
 
     Ok(ExecuteResponse {
         response_id,
