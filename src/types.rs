@@ -37,10 +37,7 @@ pub struct AuthResponse {
 impl AuthResponse {
     /// Is auth success
     pub fn is_success(&self) -> bool {
-        if self.id == -1 {
-            return false;
-        }
-        true
+        self.id != -1
     }
 }
 
@@ -50,6 +47,16 @@ pub struct RCONRequest {
     pub id: usize,
     pub request_type: u8,
     pub body: String,
+}
+
+impl RCONRequest {
+    pub fn new(body: String) -> Self {
+        Self {
+            id: rand::thread_rng().gen::<usize>(),
+            request_type: 2,
+            body,
+        }
+    }
 }
 
 /// Response for RCON command
