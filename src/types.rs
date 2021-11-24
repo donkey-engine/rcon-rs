@@ -1,6 +1,7 @@
 use rand::Rng;
 
 /// Common type for TCP response
+#[derive(Debug)]
 pub(crate) struct ExecuteResponse {
     pub(crate) response_id: i32,
     pub(crate) response_type: i32,
@@ -8,6 +9,7 @@ pub(crate) struct ExecuteResponse {
 }
 
 /// Request for auth in RCON
+#[derive(Debug)]
 pub struct AuthRequest {
     pub id: usize,
     pub request_type: u8,
@@ -26,6 +28,7 @@ impl AuthRequest {
 }
 
 /// Response from auth request
+#[derive(Debug)]
 pub struct AuthResponse {
     pub id: isize,
     pub response_type: u8,
@@ -42,6 +45,7 @@ impl AuthResponse {
 }
 
 /// Request for RCON command
+#[derive(Debug)]
 pub struct RCONRequest {
     pub id: usize,
     pub request_type: u8,
@@ -49,6 +53,7 @@ pub struct RCONRequest {
 }
 
 /// Response for RCON command
+#[derive(Debug)]
 pub struct RCONResponse {
     pub id: isize,
     pub response_type: u8,
