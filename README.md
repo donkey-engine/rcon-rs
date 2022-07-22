@@ -4,6 +4,8 @@
 ![github ci](https://github.com/donkey-engine/rcon-rs/actions/workflows/ci.yaml/badge.svg)
 ![travis ci](https://app.travis-ci.com/donkey-engine/rcon-rs.svg?branch=master)
 
+[Crates.io](https://crates.io/crates/rcon-client)
+
 **Simple implementation of a crate that allows you to work with the RCON protocol**
 
 To work with TCP, the `TcpStream` structure built into the `std::net` module is used
