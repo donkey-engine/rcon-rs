@@ -1,10 +1,12 @@
 [package]
 name = "rcon-client"
+description = "RCON client"
 version = "0.1.2"
 edition = "2021"
 repository = "https://github.com/donkey-engine/rcon-rs"
 keywords = ["rcon", "protocol", "client"]
 categories = ["network-programming"]
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
