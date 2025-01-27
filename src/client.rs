@@ -124,19 +124,41 @@ fn execute(
         .read_exact(&mut response_buffer)
         .map_err(|err| RCONError::TcpConnectionError(format!("TCP response error {}", err)))?;
     let response_type = i32::from_le_bytes(response_buffer);
+
+    // Read response body with minimal changes
     let response_body_length = response_length - 10;
     let mut response_body_buffer = Vec::with_capacity(response_body_length as usize);
-    socket
-        .take(response_body_length as u64)
-        .read_to_end(&mut response_body_buffer)
-        .map_err(|err| RCONError::TcpConnectionError(format!("TCP response error {}", err)))?;
-    let response_body = String::from_utf8(response_body_buffer)
-        .map_err(|err| RCONError::TypeError(format!("TypeError {}", err)))?;
+    let mut temp_buffer = vec![0; response_body_length as usize];
+    let mut read_so_far = 0;
 
+    while read_so_far < response_body_length as usize {
+        match socket.read(&mut temp_buffer[read_so_far..]) {
+            Ok(0) => break, // No more data
+            Ok(n) => read_so_far += n,
+            Err(e) => {
+                eprintln!("Error reading response body: {}", e);
+                break; // Preserve data read so far
+            },
+        }
+    }
+
+    // Append only the read data to the response body buffer
+    response_body_buffer.extend_from_slice(&temp_buffer[..read_so_far]);
+
+    let response_body = String::from_utf8(response_body_buffer)
+        .map_err(|err| RCONError::TypeError(format!("TypeError: {}", err)))?;
+
+    // Attempt to read terminating nulls without throwing an error on failure
     let mut terminating_nulls = [0u8; 2];
-    socket
-        .read_exact(&mut terminating_nulls)
-        .map_err(|err| RCONError::TcpConnectionError(format!("TCP response error {}", err)))?;
+    match socket.read_exact(&mut terminating_nulls) {
+        Ok(_) => {
+            // Successfully read the terminating nulls, you can add additional logic here if needed
+        },
+        Err(e) => {
+            // Log the error but do not throw it
+            eprintln!("Non-fatal error reading terminating nulls: {}", e);
+        },
+    }
 
     Ok(ExecuteResponse {
         response_id,
